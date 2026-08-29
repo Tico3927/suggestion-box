@@ -1,0 +1,17 @@
+# 依赖
+node_modules/
+
+# 环境变量
+.env
+.env.local
+
+# 系统文件
+.DS_Store
+Thumbs.db
+~$*.docx
+~$*.tmp
+~WRL*.tmp
+
+# 编辑器
+.vscode/
+.idea/

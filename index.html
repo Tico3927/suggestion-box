@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>意见箱 — 匿名提交你的建议</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { 50:'#eef2ff',100:'#e0e7ff',200:'#c7d2fe',300:'#a5b4fc',400:'#818cf8',500:'#6366f1',600:'#4f46e5',700:'#4338ca',800:'#3730a3',900:'#312e81' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)} }
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
+    .animate-float { animation: float 3s ease-in-out infinite; }
+    .animate-fadeInUp { animation: fadeInUp 0.6s ease-out forwards; }
+    .delay-100 { animation-delay: 0.1s; }
+    .delay-200 { animation-delay: 0.2s; }
+    .delay-300 { animation-delay: 0.3s; }
+    .delay-400 { animation-delay: 0.4s; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+
+  <!-- 主容器 -->
+  <div class="min-h-screen flex items-center justify-center px-4 py-12">
+    <div class="w-full max-w-2xl">
+
+      <!-- 头部 -->
+      <div class="text-center mb-10 opacity-0 animate-fadeInUp">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary-100 text-primary-600 mb-5 animate-float">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+          </svg>
+        </div>
+        <h1 class="text-3xl md:text-4xl font-bold text-slate-800 mb-3">匿名意见箱</h1>
+        <p class="text-slate-500 text-lg">你的每一条意见，我们都认真对待</p>
+      </div>
+
+      <!-- 表单卡片 -->
+      <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl shadow-slate-200/50 p-6 md:p-8 border border-slate-100 opacity-0 animate-fadeInUp delay-200">
+        <form id="suggestionForm" class="space-y-5">
+
+          <!-- 意见内容 -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              你的意见 <span class="text-red-400">*</span>
+            </label>
+            <textarea
+              id="content"
+              rows="5"
+              maxlength="2000"
+              placeholder="请在这里写下你的意见、建议或想法……"
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all resize-none text-slate-700 placeholder-slate-400"
+              required
+            ></textarea>
+            <div class="flex justify-between mt-1">
+              <span id="charCount" class="text-xs text-slate-400">0/2000</span>
+              <span id="contentError" class="text-xs text-red-400 hidden">请输入至少 10 个字</span>
+            </div>
+          </div>
+
+          <!-- 分类 -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              分类 <span class="text-red-400">*</span>
+            </label>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2" id="categoryGroup">
+              <label class="relative flex items-center justify-center px-4 py-2.5 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-primary-300 transition-all has-[:checked]:border-primary-500 has-[:checked]:bg-primary-50 has-[:checked]:text-primary-700">
+                <input type="radio" name="category" value="教学" class="sr-only" required>
+                <span class="text-sm font-medium">📚 教学</span>
+              </label>
+              <label class="relative flex items-center justify-center px-4 py-2.5 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-primary-300 transition-all has-[:checked]:border-primary-500 has-[:checked]:bg-primary-50 has-[:checked]:text-primary-700">
+                <input type="radio" name="category" value="生活" class="sr-only">
+                <span class="text-sm font-medium">🏠 生活</span>
+              </label>
+              <label class="relative flex items-center justify-center px-4 py-2.5 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-primary-300 transition-all has-[:checked]:border-primary-500 has-[:checked]:bg-primary-50 has-[:checked]:text-primary-700">
+                <input type="radio" name="category" value="管理" class="sr-only">
+                <span class="text-sm font-medium">🏛️ 管理</span>
+              </label>
+              <label class="relative flex items-center justify-center px-4 py-2.5 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-primary-300 transition-all has-[:checked]:border-primary-500 has-[:checked]:bg-primary-50 has-[:checked]:text-primary-700">
+                <input type="radio" name="category" value="其他" class="sr-only">
+                <span class="text-sm font-medium">💬 其他</span>
+              </label>
+            </div>
+            <span id="categoryError" class="text-xs text-red-400 hidden mt-1 block">请选择一个分类</span>
+          </div>
+
+          <!-- 联系方式 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2">你的名字（选填）</label>
+              <input
+                type="text"
+                id="authorName"
+                maxlength="50"
+                placeholder="留空则匿名"
+                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all text-slate-700 placeholder-slate-400"
+              >
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2">邮箱（选填，用于回复通知）</label>
+              <input
+                type="email"
+                id="authorEmail"
+                maxlength="100"
+                placeholder="your@email.com"
+                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition-all text-slate-700 placeholder-slate-400"
+              >
+            </div>
+          </div>
+
+          <!-- 匿名选项 -->
+          <div class="flex items-center gap-3">
+            <label class="relative flex items-center cursor-pointer">
+              <input type="checkbox" id="isAnonymous" class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-200 peer-checked:bg-primary-500 rounded-full transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-transform peer-checked:after:translate-x-5"></div>
+            </label>
+            <span class="text-sm text-slate-600">匿名提交（不显示名字和邮箱）</span>
+          </div>
+
+          <!-- 提交按钮 -->
+          <button
+            type="submit"
+            id="submitBtn"
+            class="w-full py-3.5 px-6 bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-primary-200 hover:shadow-xl hover:shadow-primary-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <span id="submitText">📨 提交意见</span>
+            <span id="submitSpinner" class="hidden">
+              <svg class="inline w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              提交中……
+            </span>
+          </button>
+        </form>
+      </div>
+
+      <!-- 页脚 -->
+      <p class="text-center text-slate-400 text-sm mt-8 opacity-0 animate-fadeInUp delay-400">
+        你的隐私受到保护 · 所有数据加密传输
+      </p>
+    </div>
+  </div>
+
+  <!-- 成功弹窗 -->
+  <div id="successModal" class="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center transform scale-95 transition-transform duration-300">
+      <div class="w-16 h-16 rounded-full bg-green-100 text-green-500 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.5 12.75l6 6 9-13.5" />
+        </svg>
+      </div>
+      <h3 class="text-xl font-bold text-slate-800 mb-2">提交成功！</h3>
+      <p class="text-slate-500 mb-6">感谢你的意见，我们会认真对待每一条反馈。</p>
+      <button
+        onclick="closeSuccess()"
+        class="w-full py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-xl transition-colors"
+      >继续提交</button>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // Supabase 配置 — 部署时替换为你的 Supabase 项目 URL 和 anon key
+    // ============================================================
+    const SUPABASE_URL = 'https://jdjfjuufqrwrlzktxpry.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_wL94F028VcPA2A3wjKw_yw_N0ck5VCX';
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ============================================================
+    // DOM 元素
+    // ============================================================
+    const form = document.getElementById('suggestionForm');
+    const contentEl = document.getElementById('content');
+    const charCount = document.getElementById('charCount');
+    const contentError = document.getElementById('contentError');
+    const categoryError = document.getElementById('categoryError');
+    const submitBtn = document.getElementById('submitBtn');
+    const submitText = document.getElementById('submitText');
+    const submitSpinner = document.getElementById('submitSpinner');
+    const isAnonymousCheck = document.getElementById('isAnonymous');
+    const authorNameEl = document.getElementById('authorName');
+    const authorEmailEl = document.getElementById('authorEmail');
+    const successModal = document.getElementById('successModal');
+
+    // ============================================================
+    // 字数统计
+    // ============================================================
+    contentEl.addEventListener('input', () => {
+      const len = contentEl.value.length;
+      charCount.textContent = `${len}/2000`;
+      charCount.className = len > 1900 ? 'text-xs text-amber-500' : 'text-xs text-slate-400';
+      if (len >= 10) contentError.classList.add('hidden');
+    });
+
+    // ============================================================
+    // 匿名切换：自动清空/禁用名字和邮箱
+    // ============================================================
+    isAnonymousCheck.addEventListener('change', () => {
+      if (isAnonymousCheck.checked) {
+        authorNameEl.value = '';
+        authorEmailEl.value = '';
+        authorNameEl.disabled = true;
+        authorEmailEl.disabled = true;
+        authorNameEl.placeholder = '匿名模式下不可用';
+        authorEmailEl.placeholder = '匿名模式下不可用';
+      } else {
+        authorNameEl.disabled = false;
+        authorEmailEl.disabled = false;
+        authorNameEl.placeholder = '留空则匿名';
+        authorEmailEl.placeholder = 'your@email.com';
+      }
+    });
+
+    // ============================================================
+    // 表单提交
+    // ============================================================
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // 验证
+      let valid = true;
+      const content = contentEl.value.trim();
+      const category = form.querySelector('input[name="category"]:checked')?.value;
+
+      if (content.length < 10) {
+        contentError.classList.remove('hidden');
+        valid = false;
+      } else {
+        contentError.classList.add('hidden');
+      }
+
+      if (!category) {
+        categoryError.classList.remove('hidden');
+        valid = false;
+      } else {
+        categoryError.classList.add('hidden');
+      }
+
+      if (!valid) return;
+
+      // 加载状态
+      submitBtn.disabled = true;
+      submitText.classList.add('hidden');
+      submitSpinner.classList.remove('hidden');
+
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/suggestions`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal',
+          },
+          body: JSON.stringify({
+            content,
+            category,
+            author_name: isAnonymousCheck.checked ? null : (authorNameEl.value.trim() || null),
+            author_email: isAnonymousCheck.checked ? null : (authorEmailEl.value.trim() || null),
+            is_anonymous: isAnonymousCheck.checked,
+          }),
+        });
+
+        if (!res.ok) throw new Error('提交失败');
+
+        // 显示成功弹窗
+        showSuccess();
+        form.reset();
+        charCount.textContent = '0/2000';
+        contentError.classList.add('hidden');
+        categoryError.classList.add('hidden');
+        authorNameEl.disabled = false;
+        authorEmailEl.disabled = false;
+        authorNameEl.placeholder = '留空则匿名';
+        authorEmailEl.placeholder = 'your@email.com';
+      } catch (err) {
+        alert('提交失败：' + (err.message || '未知错误，请稍后重试'));
+      } finally {
+        submitBtn.disabled = false;
+        submitText.classList.remove('hidden');
+        submitSpinner.classList.add('hidden');
+      }
+    });
+
+    // ============================================================
+    // 成功弹窗
+    // ============================================================
+    function showSuccess() {
+      successModal.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        successModal.classList.add('opacity-100');
+        successModal.classList.remove('opacity-0');
+        const inner = successModal.querySelector('div');
+        inner.classList.remove('scale-95');
+        inner.classList.add('scale-100');
+      });
+    }
+
+    function closeSuccess() {
+      successModal.classList.add('opacity-0');
+      successModal.classList.remove('opacity-100');
+      const inner = successModal.querySelector('div');
+      inner.classList.add('scale-95');
+      inner.classList.remove('scale-100');
+      setTimeout(() => successModal.classList.add('hidden'), 300);
+    }
+  </script>
+</body>
+</html>
